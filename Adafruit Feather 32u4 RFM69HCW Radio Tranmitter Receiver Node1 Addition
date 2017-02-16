@@ -103,15 +103,15 @@
 //#define LED           0 //use 0 on ESP8266
 
 /* Status Lights */
-int transmitLed = 5; // Tranmittion Status Indicator Green
-int receiveLed = 6; // Receiver Status Indicator Red
-int otherLed = 7; // Other Status Indicator Blue
+int transmitLed = 5; // Tranmittion Status Indicator Green PWM~
+int receiveLed = 6; // Receiver Status Indicator Red PWM~
+int otherLed = 7; // Other Status Indicator Blue PWM~
 
 /* Switches */
-int redToggle = 8; // Red Toggle Switch
-int redToggleLed = 9; // Red Toggle Switch Led
-int phaseA = 10; // 1st Position on Three Position Switch
-int phaseB = 11; // 2nd Position on Three Position Switch
+int redToggle = 8; // Red Toggle Switch PWM~
+int redToggleLed = 10; // Red Toggle Switch Led PWM~
+int phaseA = 11; // 1st Position on Three Position Switch PWM~
+int phaseB = 12; // 2nd Position on Three Position Switch PWM~
 
 int conLostState = 0;
 int16_t packetnum = 0;  // packet counter, we increment per xmission
@@ -151,6 +151,9 @@ void setup() {
   Serial.print("\nTransmitting at ");
   Serial.print(FREQUENCY==RF69_433MHZ ? 433 : FREQUENCY==RF69_868MHZ ? 868 : 915);
   Serial.println(" MHz");
+  digitalWrite(transmitLed, HIGH);
+  digitalWrite(receiveLed, HIGH);
+  digitalWrite(otherLed, HIGH);
 }
 
 
@@ -173,7 +176,8 @@ delay(70);
         radio.sendACK();
         Serial.println(" - ACK sent");
       }
-      Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+      //Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+      RGBBlink(receiveLed, 50, 3);
     }  
 delay(70);  // Wait 1 second between transmits, could also 'sleep' here!
     
@@ -183,7 +187,8 @@ delay(70);  // Wait 1 second between transmits, could also 'sleep' here!
     
   if (radio.sendWithRetry(RECEIVER, radiopacket, strlen(radiopacket))) { //target node Id, message as string or byte array, message length
     Serial.println("OK");
-    Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
+    //Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
+    RGBBlink(transmitLed, 50, 3);
   }
 
   radio.receiveDone(); //put radio in RX mode
@@ -197,6 +202,30 @@ void Blink(byte PIN, byte DELAY_MS, byte loops)
     digitalWrite(PIN,HIGH);
     delay(DELAY_MS);
     digitalWrite(PIN,LOW);
+    delay(DELAY_MS);
+  }
+}
+
+void RGBBlink(byte PIN, byte DELAY_MS, byte loops)
+{
+  for (byte i=0; i<loops; i++)
+  {
+    digitalWrite(PIN,LOW);
+    delay(DELAY_MS);
+    digitalWrite(PIN,HIGH);
+    delay(DELAY_MS);
+  }
+}
+
+void conRGBBlink(byte PIN, byte PINs, byte DELAY_MS, byte loops)
+{
+  for (byte i=0; i<loops; i++)
+  {
+    analogWrite(PIN,-105);
+    analogWrite(PIN,-110);
+    delay(DELAY_MS);
+    analogWrite(PIN,255);
+    analogWrite(PIN,255);
     delay(DELAY_MS);
   }
 }
